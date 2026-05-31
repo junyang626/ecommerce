@@ -1,3 +1,4 @@
+"""应用入口：创建 Flask 实例并启动开发服务器"""
 from app import create_app
 
 app = create_app()
