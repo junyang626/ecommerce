@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}订单管理 - 后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3 class="mb-4"><i class="bi bi-gear"></i> 订单管理</h3>
+
+    {% if orders %}
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>订单号</th>
+                        <th>用户</th>
+                        <th>商品数</th>
+                        <th>总金额</th>
+                        <th>状态</th>
+                        <th>下单时间</th>
+                        <th style="width:200px">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td>{{ order.user.username }}</td>
+                        <td>{{ order.items|length }}</td>
+                        <td class="text-danger fw-bold">&yen;{{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            <span class="badge
+                                {% if order.status == 'pending' %}bg-warning text-dark
+                                {% elif order.status == 'paid' %}bg-info
+                                {% elif order.status == 'shipped' %}bg-primary
+                                {% elif order.status == 'delivered' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ order.status_label }}
+                            </span>
+                        </td>
+                        <td class="text-muted small">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('main.admin_order_status', order_id=order.id) }}" class="input-group input-group-sm">
+                                <select name="status" class="form-select form-select-sm">
+                                    {% for key, label in order.STATUS_LABELS.items() %}
+                                    <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">更新</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox" style="font-size:3rem"></i>
+        <p class="mt-2">暂无订单。</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

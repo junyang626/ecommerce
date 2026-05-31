@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}订单 #{{ order.id }} - 简易商城{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 面包屑 -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">首页</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('orders.index') }}">我的订单</a></li>
+            <li class="breadcrumb-item active">订单 #{{ order.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- 订单信息 -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">订单 #{{ order.id }}</h5>
+                    <span class="badge
+                        {% if order.status == 'pending' %}bg-warning text-dark
+                        {% elif order.status == 'paid' %}bg-info
+                        {% elif order.status == 'shipped' %}bg-primary
+                        {% elif order.status == 'delivered' %}bg-success
+                        {% else %}bg-secondary{% endif %}
+                        fs-6">
+                        {{ order.status_label }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>商品</th>
+                                    <th>单价</th>
+                                    <th>数量</th>
+                                    <th>小计</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ item.product.image_url }}"
+                                                 alt="{{ item.product.name }}"
+                                                 class="me-3 rounded"
+                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                            <span>{{ item.product.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">&yen;{{ "%.2f"|format(item.price) }}</td>
+                                    <td class="align-middle">x{{ item.quantity }}</td>
+                                    <td class="align-middle text-danger fw-bold">
+                                        &yen;{{ "%.2f"|format(item.subtotal) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold fs-5">合计：</td>
+                                    <td class="text-danger fw-bold fs-5">
+                                        &yen;{{ "%.2f"|format(order.total_amount) }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单摘要 -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">
+                    <i class="bi bi-info-circle"></i> 订单信息
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">订单编号</small>
+                        <p class="fw-bold mb-0">#{{ order.id }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">下单时间</small>
+                        <p class="mb-0">{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">当前状态</small>
+                        <p class="mb-0">
+                            <span class="badge
+                                {% if order.status == 'pending' %}bg-warning text-dark
+                                {% elif order.status == 'paid' %}bg-info
+                                {% elif order.status == 'shipped' %}bg-primary
+                                {% elif order.status == 'delivered' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ order.status_label }}
+                            </span>
+                        </p>
+                    </div>
+                    <hr>
+                    <div>
+                        <small class="text-muted">商品数量</small>
+                        <p class="mb-0">{{ order.items|length }} 种</p>
+                    </div>
+                    <div>
+                        <small class="text-muted">总金额</small>
+                        <p class="text-danger fw-bold fs-5 mb-0">
+                            &yen;{{ "%.2f"|format(order.total_amount) }}
+                        </p>
+                    </div>
+
+                    <!-- 状态时间线 -->
+                    <hr>
+                    <small class="text-muted">订单进度</small>
+                    <ul class="list-unstyled mt-2">
+                        {% set steps = [
+                            ('pending', '待处理'),
+                            ('paid', '已支付'),
+                            ('shipped', '已发货'),
+                            ('delivered', '已送达')
+                        ] %}
+                        {% for status, label in steps %}
+                        <li class="d-flex align-items-center mb-2">
+                            {% set status_order = {'pending': 0, 'paid': 1, 'shipped': 2, 'delivered': 3} %}
+                            {% set current_step = status_order.get(order.status, 0) %}
+                            {% set step_num = status_order.get(status, 0) %}
+                            {% if step_num <= current_step and order.status != 'cancelled' %}
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <span class="fw-bold">{{ label }}</span>
+                            {% elif step_num == current_step + 1 %}
+                            <i class="bi bi-circle me-2 text-muted"></i>
+                            <span class="text-muted">{{ label }}</span>
+                            {% else %}
+                            <i class="bi bi-circle me-2 text-muted"></i>
+                            <span class="text-muted">{{ label }}</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="bi bi-arrow-left"></i> 返回订单列表
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

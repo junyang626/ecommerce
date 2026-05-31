@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}
+{% if current_category %}{{ current_category.name }}{% elif search %}搜索：{{ search }}{% else %}全部商品{% endif %} - 简易商城
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 面包屑 -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">首页</a></li>
+            {% if current_category %}
+            <li class="breadcrumb-item"><a href="{{ url_for('products.index') }}">全部商品</a></li>
+            <li class="breadcrumb-item active">{{ current_category.name }}</li>
+            {% elif search %}
+            <li class="breadcrumb-item"><a href="{{ url_for('products.index') }}">全部商品</a></li>
+            <li class="breadcrumb-item active">搜索：{{ search }}</li>
+            {% else %}
+            <li class="breadcrumb-item active">全部商品</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- 侧边栏：分类筛选 -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">
+                    <i class="bi bi-funnel"></i> 商品分类
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('products.index') }}"
+                       class="list-group-item list-group-item-action {% if not current_category %}active{% endif %}">
+                        全部商品
+                    </a>
+                    {% for cat in categories %}
+                    <a href="{{ url_for('products.index', category=cat.id) }}"
+                       class="list-group-item list-group-item-action {% if current_category and current_category.id == cat.id %}active{% endif %}">
+                        {{ cat.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('products.index') }}">
+                        {% if current_category %}
+                        <input type="hidden" name="category" value="{{ current_category.id }}">
+                        {% endif %}
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="q"
+                                   placeholder="搜索商品..." value="{{ search }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="col-md-9">
+            {% if search %}
+            <h5 class="mb-3">搜索 "<strong>{{ search }}</strong>" 的结果</h5>
+            {% endif %}
+
+            {% if products %}
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-6 col-lg-4">
+                    <div class="card h-100 shadow-sm product-card">
+                        <a href="{{ url_for('products.detail', product_id=product.id) }}">
+                            <img src="{{ product.image_url }}" class="card-img-top"
+                                 alt="{{ product.name }}" loading="lazy"
+                                 style="height: 180px; object-fit: cover;">
+                        </a>
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ product.name }}</h6>
+                            <p class="text-muted small mb-2">{{ product.category.name }}</p>
+                            <p class="card-text small text-muted flex-grow-1">
+                                {{ product.description[:50] }}{% if product.description|length > 50 %}...{% endif %}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="text-danger fw-bold">&yen;{{ "%.2f"|format(product.price) }}</span>
+                                {% if product.stock > 0 %}
+                                <span class="badge bg-success">有货</span>
+                                {% else %}
+                                <span class="badge bg-secondary">缺货</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('products.detail', product_id=product.id) }}"
+                               class="btn btn-outline-primary btn-sm w-100 mt-2">
+                                查看详情
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 分页 -->
+            {% if pagination.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('products.index', page=pagination.prev_num, category=request.args.get('category'), q=search) }}">
+                            &laquo; 上一页
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo; 上一页</span></li>
+                    {% endif %}
+
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('products.index', page=p, category=request.args.get('category'), q=search) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('products.index', page=pagination.next_num, category=request.args.get('category'), q=search) }}">
+                            下一页 &raquo;
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">下一页 &raquo;</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-search" style="font-size: 3rem;"></i>
+                <p class="mt-2">没有找到匹配的商品。</p>
+                <a href="{{ url_for('products.index') }}" class="btn btn-outline-primary">查看全部商品</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

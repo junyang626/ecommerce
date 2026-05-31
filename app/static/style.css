@@ -1,0 +1,123 @@
+/* ============================================================
+   简易商城 - 自定义样式
+   ============================================================ */
+
+/* 页面最小高度，让页脚沉底 */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+/* 导航栏 */
+.navbar-brand {
+    font-size: 1.3rem;
+}
+
+/* 购物车徽章位置微调 */
+.cart-badge {
+    position: absolute;
+    top: 2px;
+    right: -2px;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+}
+
+/* 商品卡片悬停效果 */
+.product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.product-card a img {
+    transition: opacity 0.2s ease;
+}
+
+.product-card a:hover img {
+    opacity: 0.85;
+}
+
+/* Hero 区域渐变 */
+.bg-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%) !important;
+}
+
+/* 价格文字 */
+.text-danger {
+    color: #e53935 !important;
+}
+
+/* 分页 */
+.pagination .page-link {
+    color: #0d6efd;
+}
+
+.pagination .active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* 面包屑 */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* 购物车页面商品图片 */
+.table img {
+    border-radius: 6px;
+}
+
+/* Alert 消息动画 */
+.alert {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 管理后台表格 */
+.table thead th {
+    white-space: nowrap;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    h1.display-5 {
+        font-size: 1.8rem;
+    }
+
+    .product-card:hover {
+        transform: none;
+    }
+}
+
+/* 订单状态时间线 */
+.bi-check-circle-fill.text-success {
+    font-size: 1rem;
+}
+
+/* 页脚 */
+footer {
+    font-size: 0.9rem;
+}

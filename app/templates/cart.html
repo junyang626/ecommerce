@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}购物车 - 简易商城{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3 class="mb-4"><i class="bi bi-cart3"></i> 我的购物车</h3>
+
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>商品</th>
+                                <th style="width: 120px;">单价</th>
+                                <th style="width: 140px;">数量</th>
+                                <th style="width: 100px;">小计</th>
+                                <th style="width: 60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ item.product.image_url }}"
+                                             alt="{{ item.product.name }}"
+                                             class="me-3 rounded"
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                        <div>
+                                            <a href="{{ url_for('products.detail', product_id=item.product.id) }}"
+                                               class="text-decoration-none fw-bold">
+                                                {{ item.product.name }}
+                                            </a>
+                                            <br>
+                                            <small class="text-muted">{{ item.product.category.name }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    &yen;{{ "%.2f"|format(item.product.price) }}
+                                </td>
+                                <td class="align-middle">
+                                    <form method="POST" action="{{ url_for('cart.update', item_id=item.id) }}"
+                                          class="input-group input-group-sm">
+                                        <input type="number" name="quantity"
+                                               value="{{ item.quantity }}"
+                                               min="1" max="{{ item.product.stock }}"
+                                               class="form-control" style="max-width: 60px;">
+                                        <button type="submit" class="btn btn-outline-secondary">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="align-middle text-danger fw-bold">
+                                    &yen;{{ "%.2f"|format(item.subtotal) }}
+                                </td>
+                                <td class="align-middle">
+                                    <form method="POST" action="{{ url_for('cart.remove', item_id=item.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="移除">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结算区域 -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">
+                    <i class="bi bi-calculator"></i> 订单汇总
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>商品数量</span>
+                        <strong>{{ cart_items|length }} 种</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fs-5 fw-bold">合计金额</span>
+                        <span class="fs-4 text-danger fw-bold">
+                            &yen;{{ "%.2f"|format(total) }}
+                        </span>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('orders.create') }}">
+                        <button type="submit" class="btn btn-danger btn-lg w-100">
+                            <i class="bi bi-credit-card"></i> 提交订单
+                        </button>
+                    </form>
+
+                    <a href="{{ url_for('products.index') }}" class="btn btn-outline-primary w-100 mt-2">
+                        <i class="bi bi-bag"></i> 继续购物
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-cart-x" style="font-size: 4rem; color: #ccc;"></i>
+        <p class="text-muted mt-3 fs-5">购物车还是空的～</p>
+        <a href="{{ url_for('products.index') }}" class="btn btn-primary btn-lg mt-2">
+            <i class="bi bi-bag"></i> 去逛逛
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
